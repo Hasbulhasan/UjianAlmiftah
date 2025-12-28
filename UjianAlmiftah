@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Input Nilai Pesantren</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .wrapper { max-width: 900px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 25px; }
+        form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+        .full-width { grid-column: span 2; }
+        input, button { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        button { cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-save { background: #28a745; color: white; border: none; }
+        .btn-save:hover { background: #218838; }
+        .btn-pdf { background: #e74c3c; color: white; border: none; margin-top: 15px; width: 100%; }
+        .btn-pdf:hover { background: #c0392b; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { border: 1px solid #eee; text-align: center; padding: 12px; }
+        th { background-color: #34495e; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .status-lulus { color: #28a745; font-weight: bold; }
+        .status-gagal { color: #dc3545; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <h2>Sistem Input Nilai Ujian</h2>
+    
+    <form id="scoreForm">
+        <input type="text" id="studentName" class="full-width" placeholder="Nama Lengkap Siswa" required>
+        <input type="number" id="scoreShorof" placeholder="Shorof (0-30)" min="0" max="30" required>
+        <input type="number" id="scoreNahwu" placeholder="Nahwu (0-30)" min="0" max="30" required>
+        <input type="number" id="scoreBacaan" placeholder="Bacaan (0-40)" min="0" max="40" required>
+        <button type="submit" class="btn-save">selesai</button>
+    </form>
+
+    <hr>
+
+    <h3>Daftar Hasil Ujian</h3>
+    <table id="valueTable">
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Shorof</th>
+                <th>Nahwu</th>
+                <th>Bacaan</th>
+                <th>Total</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+
+    <button onclick="downloadPDF()" class="btn-pdf">Unduh Laporan PDF (.pdf)</button>
+</div>
+
+<script>
+    const { jsPDF } = window.jspdf;
+    let dataNilai = [];
+
+    document.getElementById('scoreForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('studentName').value;
+        const shorof = parseInt(document.getElementById('scoreShorof').value);
+        const nahwu = parseInt(document.getElementById('scoreNahwu').value);
+        const bacaan = parseInt(document.getElementById('scoreBacaan').value);
+        
+        // Menghitung Total
+        const total = shorof + nahwu + bacaan;
+        
+        // Penentuan Kelulusan (Contoh: Total >= 70 Lulus)
+        let status = total >= 70 ? 'LULUS' : 'TIDAK LULUS';
+        let statusClass = total >= 70 ? 'status-lulus' : 'status-gagal';
+
+        // Simpan data ke array
+        const newData = { name, shorof, nahwu, bacaan, total, status, statusClass };
+        dataNilai.push(newData);
+
+        // Update Tabel
+        updateTable();
+        this.reset();
+    });
+
+    function updateTable() {
+        const tbody = document.querySelector('#valueTable tbody');
+        tbody.innerHTML = '';
+        dataNilai.forEach(item => {
+            const row = `<tr>
+                <td style="text-align:left">${item.name}</td>
+                <td>${item.shorof}</td>
+                <td>${item.nahwu}</td>
+                <td>${item.bacaan}</td>
+                <td>${item.total}</td>
+                <td class="${item.statusClass}">${item.status}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    function downloadPDF() {
+        if(dataNilai.length === 0) {
+            alert("Belum ada data untuk diunduh!");
+            return;
+        }
+
+        const doc = new jsPDF();
+        doc.text("LAPORAN HASIL UJIAN", 14, 15);
+        
+        const rows = [];
+        dataNilai.forEach(item => {
+            rows.push([item.name, item.shorof, item.nahwu, item.bacaan, item.total, item.status]);
+        });
+
+        doc.autoTable({
+            head: [['Nama Siswa', 'Shorof', 'Nahwu', 'Bacaan', 'Total', 'Status']],
+            body: rows,
+            startY: 25,
+            theme: 'grid'
+        });
+
+        doc.save("Laporan_Nilai_Ujian.pdf");
+    }
+</script>
+
+</body>
+</html>
