@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Kuesioner Saya</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding: 50px; background: #f4f4f9; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        input, textarea { width: 100%; margin: 10px 0; padding: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Pertanyaan Singkat</h2>
+    <form id="my-form">
+        <input type="text" name="nama" placeholder="Nama Anda" required>
+        <input type="email" name="email" placeholder="Email Anda" required>
+        <textarea name="jawaban" placeholder="Apa pendapat Anda tentang AI?" rows="4" required></textarea>
+        <button type="submit" id="submit-btn">Kirim Jawaban</button>
+    </form>
+    <p id="status"></p>
+</div>
+
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxjKGDRE5q2v8ebAmPnWagkSL3KAQUV6FJji9-BpFBYbS9n2kDgVTB5OpDUvgVFFX4O/exec'; // <--- GANTI DENGAN URL DARI APPS SCRIPT
+    const form = document.getElementById('my-form');
+
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        document.getElementById('submit-btn').disabled = true;
+        document.getElementById('status').innerText = "Sedang mengirim...";
+
+        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+            .then(response => {
+                document.getElementById('status').innerText = "Terima kasih! Data tersimpan di Google Drive.";
+                form.reset();
+                document.getElementById('submit-btn').disabled = false;
+            })
+            .catch(error => console.error('Error!', error.message));
+    });
+</script>
+
+</body>
+</html>
